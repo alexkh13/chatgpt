@@ -70,6 +70,9 @@
             recognition.start();
 
             recognition.onresult = handleTranscription;
+            recognition.onend = () => {
+              startListening();
+            };
           };
 
           const stopListening = () => {
@@ -92,21 +95,20 @@
         }, [listening]);
 
         return (
-          React.createElement("div", null,
-            React.createElement("button", { onClick: () => setListening(!listening) },
-              listening ? "Stop Listening" : "Start Listening"),
-            React.createElement("p", null, transcription))
+          <div>
+            <button onClick={() => setListening(!listening)}>
+              {listening ? "Stop Listening" : "Start Listening"}
+            </button>
+            <p>{transcription}</p>
+          </div>
         );
       };
 
       const App = () => {
-        return (
-          React.createElement("div", null,
-            React.createElement(SpeechToText, null))
-        );
+        return <div><SpeechToText /></div>;
       };
 
-      ReactDOM.render(React.createElement(App, null), document.getElementById("root"));
+      ReactDOM.render(<App />, document.getElementById("root"));
     </script>
   </body>
 </html>
