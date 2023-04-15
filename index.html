@@ -9,6 +9,28 @@
       content="This is a simple React component that listens to what the user says and transcribes every word, displaying only one word at a time."
     />
     <title>Voice Recognition Transcription Component</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      p {
+        font-size: 24px;
+        line-height: 1.5;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -27,7 +49,6 @@
       const SpeechToText = () => {
         const [transcription, setTranscription] = React.useState("");
         const [listening, setListening] = React.useState(false);
-        const [currentWordIndex, setCurrentWordIndex] = React.useState(0);
 
         const handleTranscription = (event) => {
           const transcript = Array.from(event.results)
@@ -70,20 +91,11 @@
           };
         }, [listening]);
 
-        React.useEffect(() => {
-          const words = transcription.split(" ");
-          const timeout = setTimeout(() => {
-            setCurrentWordIndex((currentWordIndex + 1) % words.length);
-          }, 1000);
-          return () => clearTimeout(timeout);
-        }, [transcription, currentWordIndex]);
-
         return (
           React.createElement("div", null,
             React.createElement("button", { onClick: () => setListening(!listening) },
               listening ? "Stop Listening" : "Start Listening"),
-            React.createElement("p", null, transcription),
-            React.createElement("p", null, transcription.split(" ")[currentWordIndex]))
+            React.createElement("p", null, transcription))
         );
       };
 
