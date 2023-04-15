@@ -1,114 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="This is a simple React component that listens to what the user says and transcribes every word, displaying only one word at a time."
-    />
-    <title>Voice Recognition Transcription Component</title>
-    <style>
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-
-      button {
-        padding: 10px;
-        font-size: 18px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-      }
-
-      p {
-        font-size: 24px;
-        line-height: 1.5;
-        text-align: center;
-      }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Speech Recognition</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@17.0.2/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"
+    ></script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!-- Load React from a CDN -->
-    <script
-      crossorigin
-      src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"
-    ></script>
-    <!-- Load ReactDOM from a CDN -->
-    <script
-      crossorigin
-      src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"
-    ></script>
     <script>
-      const SpeechToText = () => {
-        const [transcription, setTranscription] = React.useState("");
-        const [listening, setListening] = React.useState(false);
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        const handleTranscription = (event) => {
-          const transcript = Array.from(event.results)
-            .map((result) => result[0])
-            .map((result) => result.transcript)
-            .join("");
-
-          setTranscription(transcript);
-        };
-
-        const startListening = () => {
-          const recognition = new window.webkitSpeechRecognition();
-          recognition.continuous = true;
-          recognition.interimResults = true;
-          recognition.lang = "en-US";
-          recognition.start();
-
-          recognition.onresult = handleTranscription;
-          recognition.onend = () => {
-            startListening();
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+          this.recognition = null;
+          this.state = {
+            listening: false,
+            words: [],
           };
+          this.toggleListen = this.toggleListen.bind(this);
+          this.handleListen = this.handleListen.bind(this);
+        }
 
-          return recognition;
-        };
-
-        const stopListening = (recognition) => {
-          recognition.stop();
-        };
-
-        React.useEffect(() => {
-          let recognition;
-
-          if (listening) {
-            recognition = startListening();
-          } else if (recognition) {
-            stopListening(recognition);
+        toggleListen() {
+          const { listening } = this.state;
+          if (!listening) {
+            this.recognition = new SpeechRecognition();
+            this.recognition.lang = "en-US";
+            this.recognition.interimResults = false;
+            this.recognition.maxAlternatives = 1;
+            this.recognition.start();
+            this.recognition.addEventListener("result", this.handleListen);
+            this.setState({ listening: true });
+          } else {
+            this.recognition.removeEventListener("result", this.handleListen);
+            this.recognition.stop();
+            this.recognition = null;
+            this.setState({ listening: false });
           }
+        }
 
-          return () => {
-            if (recognition) {
-              stopListening(recognition);
-            }
-          };
-        }, [listening]);
+        handleListen(event) {
+          const { transcript } = event.results[0][0];
+          const words = transcript.split(" ");
+          this.setState({ words });
+        }
 
-        return React.createElement("div", null, [
-          React.createElement(
-            "button",
-            { onClick: () => setListening(!listening) },
-            listening ? "Stop Listening" : "Start Listening"
-          ),
-          React.createElement("p", null, transcription),
-        ]);
-      };
+        render() {
+          const { listening, words } = this.state;
+          return React.createElement(
+            "div",
+            { className: "app-container" },
+            React.createElement(
+              "button",
+              { onClick: this.toggleListen },
+              listening ? "Stop listening" : "Start listening"
+            ),
+            React.createElement(
+              "p",
+              { className: "words" },
+              words.map((word, index) =>
+                React.createElement("span", { key: index }, `${word} `)
+              )
+            )
+          );
+        }
+      }
 
-      const App = () => {
-        return React.createElement("div", null, [React.createElement(SpeechToText)]);
-      };
-
-      ReactDOM.render(React.createElement(App), document.getElementById("root"));
+      ReactDOM.render(
+        React.createElement(App),
+        document.getElementById("root")
+      );
     </script>
   </body>
 </html>
