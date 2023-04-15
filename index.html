@@ -59,37 +59,37 @@
           setTranscription(transcript);
         };
 
+        const startListening = () => {
+          const recognition = new window.webkitSpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "en-US";
+          recognition.start();
+
+          recognition.onresult = handleTranscription;
+          recognition.onend = () => {
+            startListening();
+          };
+
+          return recognition;
+        };
+
+        const stopListening = (recognition) => {
+          recognition.stop();
+        };
+
         React.useEffect(() => {
           let recognition;
 
-          const startListening = () => {
-            recognition = new window.webkitSpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = "en-US";
-            recognition.start();
-
-            recognition.onresult = handleTranscription;
-            recognition.onend = () => {
-              startListening();
-            };
-          };
-
-          const stopListening = () => {
-            if (recognition) {
-              recognition.stop();
-            }
-          };
-
           if (listening) {
-            startListening();
-          } else {
-            stopListening();
+            recognition = startListening();
+          } else if (recognition) {
+            stopListening(recognition);
           }
 
           return () => {
             if (recognition) {
-              stopListening();
+              stopListening(recognition);
             }
           };
         }, [listening]);
