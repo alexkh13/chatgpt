@@ -94,21 +94,21 @@
           };
         }, [listening]);
 
-        return (
-          <div>
-            <button onClick={() => setListening(!listening)}>
-              {listening ? "Stop Listening" : "Start Listening"}
-            </button>
-            <p>{transcription}</p>
-          </div>
-        );
+        return React.createElement("div", null, [
+          React.createElement(
+            "button",
+            { onClick: () => setListening(!listening) },
+            listening ? "Stop Listening" : "Start Listening"
+          ),
+          React.createElement("p", null, transcription),
+        ]);
       };
 
       const App = () => {
-        return <div><SpeechToText /></div>;
+        return React.createElement("div", null, [React.createElement(SpeechToText)]);
       };
 
-      ReactDOM.render(<App />, document.getElementById("root"));
+      ReactDOM.render(React.createElement(App), document.getElementById("root"));
     </script>
   </body>
 </html>
