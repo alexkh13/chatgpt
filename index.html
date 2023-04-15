@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!-- Load React from a CDN -->
+    <script
+      crossorigin
+      src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"
+    ></script>
+    <!-- Load ReactDOM from a CDN -->
+    <script
+      crossorigin
+      src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"
+    ></script>
+    <script>
+      const SpeechToText = () => {
+        const [transcription, setTranscription] = React.useState("");
+        const [listening, setListening] = React.useState(false);
+        const [currentWordIndex, setCurrentWordIndex] = React.useState(0);
+
+        const handleTranscription = (event) => {
+          const transcript = Array.from(event.results)
+            .map((result) => result[0])
+            .map((result) => result.transcript)
+            .join("");
+
+          setTranscription(transcript);
+        };
+
+        React.useEffect(() => {
+          let recognition;
+
+          const startListening = () => {
+            recognition = new window.webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = "en-US";
+            recognition.start();
+
+            recognition.onresult = handleTranscription;
+          };
+
+          const stopListening = () => {
+            recognition.stop();
+          };
+
+          if (listening) {
+            startListening();
+          } else {
+            stopListening();
+          }
+
+          return () => {
+            if (recognition) {
+              stopListening();
+            }
+          };
+        }, [listening]);
+
+        React.useEffect(() => {
+          const words = transcription.split(" ");
+          const timeout = setTimeout(() => {
+            setCurrentWordIndex((currentWordIndex + 1) % words.length);
+          }, 1000);
+          return () => clearTimeout(timeout);
+        }, [transcription, currentWordIndex]);
+
+        return (
+          React.createElement("div", null,
+            React.createElement("button", { onClick: () => setListening(!listening) },
+              listening ? "Stop Listening" : "Start Listening"),
+            React.createElement("p", null, transcription),
+            React.createElement("p", null, transcription.split(" ")[currentWordIndex]))
+        );
+      };
+
+      const App = () => {
+        return (
+          React.createElement("div", null,
+            React.createElement(SpeechToText, null))
+        );
+      };
+
+      ReactDOM.render(React.createElement(App, null), document.getElementById("root"));
+    </script>
+  </body>
+</html>
